@@ -345,6 +345,17 @@ export const VoiceFabButton: React.FC<VoiceFabButtonProps> = ({
 
   const title = tooltip ?? "Record voice note";
 
+  const statusLabel =
+    status === "recording"
+      ? "Recording…"
+      : status === "processing"
+      ? "Processing…"
+      : status === "success"
+      ? "Inserted"
+      : status === "error"
+      ? "Retry"
+      : "Record";
+
   return (
     <div
       className={`crm-voice-fab ${visible ? "crm-voice-fab--visible" : ""}`.trim()}
@@ -358,18 +369,6 @@ export const VoiceFabButton: React.FC<VoiceFabButtonProps> = ({
         onClick={handleClick}
         title={title}
       >
-        <span className="crm-voice-fab__icon" ref={iconRef} aria-hidden />
-        <span className="crm-voice-fab__label">
-          {status === "recording"
-            ? "Recording…"
-            : status === "processing"
-            ? "Processing…"
-            : status === "success"
-            ? "Inserted"
-            : status === "error"
-            ? "Retry"
-            : "Record"}
-        </span>
         <span className="crm-voice-fab__visualizer" aria-hidden>
           {levels.map((level, index) => (
             <span
@@ -381,7 +380,13 @@ export const VoiceFabButton: React.FC<VoiceFabButtonProps> = ({
             />
           ))}
         </span>
+        <span className="crm-voice-fab__icon" ref={iconRef} aria-hidden />
       </button>
+      {visible ? (
+        <div className="crm-voice-fab__status" aria-live="polite">
+          {statusLabel}
+        </div>
+      ) : null}
       {errorMessage && visible ? (
         <div className="crm-voice-fab__message" role="status">
           {errorMessage}
