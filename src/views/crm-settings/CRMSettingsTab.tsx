@@ -12,6 +12,7 @@ import {
   getCRMEntityConfig,
 } from "@/types/CRMFileType";
 import { CRM_DEFAULT_TEMPLATES } from "@/templates";
+import { getSupportedOpenAIModels } from "@/utils/VoiceNoteEditor";
 
 // Settings tab for CRM plugin
 export class CRMSettingsTab extends PluginSettingTab {
@@ -234,6 +235,27 @@ export class CRMSettingsTab extends PluginSettingTab {
         try {
           (text.inputEl as HTMLInputElement).type = "password";
         } catch (e) {}
+      });
+
+    const openAIModels = getSupportedOpenAIModels();
+
+    new Setting(containerEl)
+      .setName("OpenAI model")
+      .setDesc(
+        "Select the OpenAI model that will update notes after voice transcription."
+      )
+      .addDropdown((dropdown) => {
+        dropdown.addOptions(openAIModels);
+        const value = (this.plugin as any).settings.openAIModel ?? "gpt-5o-mini";
+        dropdown.setValue(
+          Object.prototype.hasOwnProperty.call(openAIModels, value)
+            ? value
+            : "gpt-5o-mini"
+        );
+        dropdown.onChange(async (model) => {
+          (this.plugin as any).settings.openAIModel = model;
+          await (this.plugin as any).saveSettings();
+        });
       });
 
     // Daily Logs section

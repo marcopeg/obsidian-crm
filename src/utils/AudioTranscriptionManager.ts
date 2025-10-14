@@ -1,7 +1,7 @@
 import type CRM from "@/main";
 import { Notice, TFile } from "obsidian";
 
-const TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
+export const OPENAI_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe";
 
 const MIME_FALLBACK = "application/octet-stream";
 const EXTENSION_TO_MIME: Record<string, string> = {
@@ -91,7 +91,7 @@ export class AudioTranscriptionManager {
     const blob = new Blob([buffer], { type: getMimeFromExtension(file.extension) });
 
     const formData = new FormData();
-    formData.append("model", TRANSCRIPTION_MODEL);
+    formData.append("model", OPENAI_TRANSCRIPTION_MODEL);
     formData.append("file", blob, file.name);
 
     const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {

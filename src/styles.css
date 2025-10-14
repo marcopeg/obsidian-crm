@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.crm-voice-fab {
+  position: fixed;
+  inset: auto 1.5rem 1.5rem auto;
+  z-index: 1000;
+  display: none;
+  pointer-events: none;
+}
+
+.crm-voice-fab.crm-voice-fab-visible {
+  display: flex;
+  pointer-events: auto;
+}
+
+.crm-voice-fab-button {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  position: relative;
+}
+
+.crm-voice-fab-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.3);
+}
+
+.crm-voice-fab-button:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+
+.crm-voice-fab-button:focus-visible {
+  outline: 2px solid var(--interactive-accent-hover);
+  outline-offset: 2px;
+}
+
+.crm-voice-fab-button.is-recording {
+  background: var(--interactive-accent-hover);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+}
+
+.crm-voice-fab-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+}
+
+.crm-voice-fab-visualizer {
+  display: none;
+  gap: 0.25rem;
+  align-items: flex-end;
+  height: 1.5rem;
+}
+
+.crm-voice-fab-button.is-recording .crm-voice-fab-visualizer {
+  display: inline-flex;
+}
+
+.crm-voice-fab-button.is-recording .crm-voice-fab-icon {
+  display: none;
+}
+
+.crm-voice-fab-bar {
+  width: 0.2rem;
+  border-radius: 0.1rem;
+  background: currentColor;
+  transform-origin: bottom center;
+  transform: scaleY(0.25);
+  transition: transform 60ms linear;
+}
+
+.crm-voice-fab-bar::before {
+  content: "";
+  display: block;
+}
+
+.crm-voice-fab-button.is-recording .crm-voice-fab-bar {
+  transform: scaleY(var(--crm-voice-bar-scale, 0.25));
+}
+
+.crm-voice-fab-spinner {
+  display: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: currentColor;
+  animation: crm-voice-spin 700ms linear infinite;
+}
+
+.crm-voice-fab-button.is-processing .crm-voice-fab-spinner {
+  display: inline-flex;
+}
+
+.crm-voice-fab-button.is-processing .crm-voice-fab-icon,
+.crm-voice-fab-button.is-processing .crm-voice-fab-visualizer {
+  display: none;
+}
+
+@keyframes crm-voice-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crm-voice-fab-button,
+  .crm-voice-fab-bar,
+  .crm-voice-fab-spinner {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}

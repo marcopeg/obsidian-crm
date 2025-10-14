@@ -12,6 +12,7 @@ import { CRMInlineViewWrapper } from "@/views/crm-inline-view/wrapper";
 import { CRMSettingsTab } from "@/views/crm-settings/CRMSettingsTab";
 import { CRMFileManager } from "@/utils/CRMFileManager";
 import { AudioTranscriptionManager } from "@/utils/AudioTranscriptionManager";
+import { VoiceNoteEditor } from "@/utils/VoiceNoteEditor";
 import {
   CRMFileType,
   CRM_FILE_TYPES,
@@ -49,11 +50,14 @@ export default class CRM extends Plugin {
     daily: DEFAULT_CRM_DAILY_SETTINGS,
     templates: Object.fromEntries(CRM_FILE_TYPES.map((t) => [String(t), ""])),
     openAIWhisperApiKey: "",
+    openAIModel: "gpt-5o-mini",
   };
 
   private hasFocusedDashboardOnStartup = false;
 
   private audioTranscriptionManager: AudioTranscriptionManager | null = null;
+
+  private voiceNoteEditor: VoiceNoteEditor | null = null;
 
   async loadSettings() {
     const data = await this.loadData();
@@ -70,6 +74,7 @@ export default class CRM extends Plugin {
     );
 
     this.settings.openAIWhisperApiKey = this.settings.openAIWhisperApiKey ?? "";
+    this.settings.openAIModel = this.settings.openAIModel ?? "gpt-5o-mini";
   }
 
   async saveSettings() {
@@ -86,6 +91,9 @@ export default class CRM extends Plugin {
 
     this.audioTranscriptionManager = new AudioTranscriptionManager(this);
     this.audioTranscriptionManager.initialize();
+
+    this.voiceNoteEditor = new VoiceNoteEditor(this);
+    this.voiceNoteEditor.initialize();
 
     // Initialize the CRM file manager in the background (non-blocking)
     const fileManager = CRMFileManager.getInstance(this.app);
@@ -207,21 +215,29 @@ export default class CRM extends Plugin {
     });
     this.registerEvent(
       this.app.workspace.on("file-open", () => {
+        this.voiceNoteEditor?.syncWithActiveLeaf();
         void this.syncPanels();
       })
     );
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => {
+        this.voiceNoteEditor?.syncWithActiveLeaf();
         void this.syncPanels();
       })
     );
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
+        this.voiceNoteEditor?.syncWithActiveLeaf();
         void this.syncPanels();
       })
     );
     this.registerDomEvent(window, "focus", () => {
+      this.voiceNoteEditor?.syncWithActiveLeaf();
       void this.syncPanels();
+    });
+
+    this.app.workspace.onLayoutReady(() => {
+      this.voiceNoteEditor?.syncWithActiveLeaf();
     });
 
     // Inject journal navigational components (pass plugin so handler can read settings)
@@ -253,6 +269,9 @@ export default class CRM extends Plugin {
 
     this.audioTranscriptionManager?.dispose();
     this.audioTranscriptionManager = null;
+
+    this.voiceNoteEditor?.dispose();
+    this.voiceNoteEditor = null;
   }
 
   private async openEntityPanel(entityType: CRMFileType) {
