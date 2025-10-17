@@ -566,3 +566,181 @@
 #crm-focus-mode-nav-next-btn {
   right: 1rem;
 }
+
+.crm-timer-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem 1.5rem;
+  border-radius: var(--radius-l, 1rem);
+  border: 1px solid var(--interactive-accent);
+  background-color: var(--background-secondary);
+  background-image: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--interactive-accent) 18%, transparent) 0%,
+    transparent 55%,
+    color-mix(in srgb, var(--interactive-accent) 12%, transparent) 100%
+  );
+  box-shadow: 0 1.2rem 2.4rem rgba(0, 0, 0, 0.18);
+  max-width: 18rem;
+  margin: 0 auto;
+}
+
+.crm-timer-block__heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.crm-timer-block__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-normal);
+  text-align: center;
+}
+
+.crm-timer-block__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.crm-timer-block__status--work {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.crm-timer-block__status--rest {
+  background: var(--color-orange, #d97706);
+  color: var(--text-on-accent);
+}
+
+.crm-timer-block__button {
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+  box-shadow: 0 0.7rem 1.6rem rgba(0, 0, 0, 0.18);
+  box-shadow: 0 0.7rem 1.6rem color-mix(in srgb, var(--interactive-accent) 35%, transparent);
+  background: var(--background-primary);
+  color: var(--interactive-accent);
+  position: relative;
+  overflow: visible;
+}
+
+.crm-timer-block__button--start {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+  border-color: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
+}
+
+.crm-timer-block__button--stop {
+  border-color: var(--interactive-accent);
+}
+
+.crm-timer-block__button--rest {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+  background: color-mix(in srgb, var(--interactive-accent) 82%, transparent);
+  border-color: color-mix(in srgb, var(--interactive-accent) 65%, transparent);
+}
+
+.crm-timer-block--resting .crm-timer-block__button:not(:disabled) {
+  transform: scale(1.01);
+}
+
+.crm-timer-block__button-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.crm-timer-block__progress {
+  position: absolute;
+  inset: -0.55rem;
+  width: calc(100% + 1.1rem);
+  height: calc(100% + 1.1rem);
+  pointer-events: none;
+  transform: rotate(-90deg);
+  filter: drop-shadow(
+    0 0.35rem 0.9rem color-mix(in srgb, var(--interactive-accent) 28%, transparent)
+  );
+}
+
+.crm-timer-block__progress-track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--interactive-accent) 32%, transparent);
+  stroke-opacity: 0.35;
+  stroke-width: 6;
+}
+
+.crm-timer-block__progress-indicator {
+  fill: none;
+  stroke: var(--interactive-accent);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.crm-timer-block--resting .crm-timer-block__progress-indicator {
+  stroke: color-mix(in srgb, var(--color-orange, #d97706) 85%, var(--interactive-accent));
+}
+
+.crm-timer-block__button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.crm-timer-block__button:not(:disabled):hover {
+  transform: scale(1.05);
+}
+
+.crm-timer-block__button:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.crm-timer-block__button-icon {
+  font-size: 2.1rem;
+  line-height: 1;
+}
+
+.crm-timer-block__countdown {
+  font-family: var(--font-monospace);
+  font-size: 1.55rem;
+}
+
+.crm-timer-block__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

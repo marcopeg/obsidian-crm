@@ -2,12 +2,14 @@ import { InlineError } from "@/components/InlineError";
 import type { ComponentType } from "react";
 import { JournalNav } from "@/containers/JournalNav";
 import HabitTracker from "@/containers/HabitTracker";
+import TimerBlock from "@/containers/TimerBlock";
 
 type CodeBlockProps = Record<string, string>;
 
 const blocksMap: Record<string, ComponentType<CodeBlockProps>> = {
   "journal-nav": JournalNav as ComponentType<CodeBlockProps>,
   habits: HabitTracker as ComponentType<CodeBlockProps>,
+  timer: TimerBlock as ComponentType<CodeBlockProps>,
 };
 
 const parseInlineQuery = (query: string): CodeBlockProps => {
