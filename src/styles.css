@@ -566,3 +566,73 @@
 #crm-focus-mode-nav-next-btn {
   right: 1rem;
 }
+
+.crm-timer-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.crm-timer-block__label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.crm-timer-block__button {
+  width: 7rem;
+  height: 7rem;
+  border-radius: 9999px;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.15);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.crm-timer-block__button--stop {
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+}
+
+.crm-timer-block__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.crm-timer-block__button:not(:disabled):hover {
+  transform: scale(1.03);
+}
+
+.crm-timer-block__button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.crm-timer-block__button-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.crm-timer-block__countdown {
+  font-family: var(--font-monospace);
+  font-size: 1.5rem;
+}
+
+.crm-timer-block__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
