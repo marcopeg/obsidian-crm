@@ -22,7 +22,8 @@ project:
 
 const meetingConfig: CRMEntityConfig<
   "meeting",
-  { type: "facts"; collapsed?: boolean }
+  | { type: "meeting-navigation" }
+  | { type: "facts"; collapsed?: boolean }
 > = {
   type: "meeting",
   name: "Meetings",
@@ -36,6 +37,9 @@ const meetingConfig: CRMEntityConfig<
     sort: { column: "date_time", direction: "desc" },
   },
   links: [
+    {
+      type: "meeting-navigation",
+    },
     {
       type: "facts",
     },

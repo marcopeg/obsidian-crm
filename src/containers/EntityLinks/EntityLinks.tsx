@@ -17,6 +17,7 @@ import { ParticipantsAssignmentLinks } from "./panels/ParticipantsAssignmentLink
 import { FactsLinks } from "./panels/FactsLinks";
 import { LocationPeopleLinks } from "./panels/LocationPeopleLinks";
 import { LocationCompaniesLinks } from "./panels/LocationCompaniesLinks";
+import { MeetingNavigationLinks } from "./panels/MeetingNavigationLinks";
 
 type LinkPanelProps = {
   file: TCachedFile;
@@ -27,6 +28,7 @@ const entityMap: Record<string, React.ComponentType<LinkPanelProps>> = {
   teammates: TeammatesLinks,
   "team-members": TeamMembersLinks,
   meetings: MeetingsLinks,
+  "meeting-navigation": MeetingNavigationLinks,
   teams: TeamsLinks,
   employees: EmployeesLinks,
   projects: ProjectsLinks,
