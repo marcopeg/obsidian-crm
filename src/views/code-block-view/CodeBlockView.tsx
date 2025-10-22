@@ -4,6 +4,7 @@ import YAML from "yaml";
 import { JournalNav } from "@/containers/JournalNav";
 import HabitTracker from "@/containers/HabitTracker";
 import TimerBlock from "@/containers/TimerBlock";
+import GameApples from "@/containers/GameApples";
 
 type CodeBlockProps = Record<string, unknown>;
 
@@ -12,6 +13,7 @@ const blocksMap: Record<string, ComponentType<CodeBlockProps>> = {
   habits: HabitTracker as ComponentType<CodeBlockProps>,
   timer: TimerBlock as ComponentType<CodeBlockProps>,
   "time-plan": TimerBlock as ComponentType<CodeBlockProps>,
+  "game-apples": GameApples as ComponentType<CodeBlockProps>,
 };
 
 const parseInlineQuery = (query: string): Record<string, string> => {

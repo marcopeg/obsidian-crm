@@ -859,3 +859,553 @@
   font-size: 1rem;
   color: var(--text-normal);
 }
+
+.crm-game-apples-block {
+  --crm-game-apples-accent: color-mix(in srgb, var(--interactive-accent) 80%, #ff8a00);
+  --crm-game-apples-secondary: color-mix(in srgb, var(--interactive-accent) 30%, #5bcefa);
+  border: 2px solid var(--crm-game-apples-accent);
+  border-radius: 1.25rem;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  width: min(100%, 760px);
+  margin: clamp(0.75rem, 2vw, 1.75rem) auto;
+  min-height: clamp(14rem, 34vw, 21rem);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--crm-game-apples-secondary) 45%, transparent) 0%, transparent 55%),
+    linear-gradient(135deg, color-mix(in srgb, var(--crm-game-apples-accent) 25%, transparent) 0%, transparent 60%),
+    var(--background-primary);
+  box-shadow:
+    0 12px 24px color-mix(in srgb, var(--crm-game-apples-accent) 12%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--crm-game-apples-accent) 30%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.crm-game-apples-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.35rem, 1vw, 0.75rem);
+}
+
+.crm-game-apples-title {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 700;
+  color: color-mix(in srgb, var(--crm-game-apples-accent) 90%, var(--text-normal));
+  letter-spacing: 0.02em;
+}
+
+.crm-game-apples-subtitle {
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  color: var(--text-muted);
+}
+
+.crm-game-apples-play {
+  border: none;
+  border-radius: 1rem;
+  padding: clamp(1.5rem, 4vw, 2.6rem);
+  background: linear-gradient(135deg, #ff6f61 0%, #ffb347 45%, #ffd97d 100%);
+  color: #2d1f10;
+  font-weight: 700;
+  font-size: clamp(1.2rem, 2.2vw, 1.45rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.45rem, 1.2vw, 0.85rem);
+  width: 100%;
+  min-height: clamp(5.5rem, 16vw, 7.75rem);
+  cursor: pointer;
+  box-shadow:
+    0 14px 24px rgba(255, 111, 97, 0.35),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  transition: transform 120ms ease, box-shadow 160ms ease;
+}
+
+.crm-game-apples-play:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 18px 30px rgba(255, 111, 97, 0.4),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.crm-game-apples-play:active {
+  transform: translateY(2px) scale(0.99);
+}
+
+.crm-game-apples-play-icon {
+  font-size: clamp(2.4rem, 6vw, 3.25rem);
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.12));
+}
+
+.crm-game-apples-play-label {
+  font-size: clamp(1.3rem, 2.6vw, 1.65rem);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.crm-game-apples-play-meta {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: rgba(0, 0, 0, 0.65);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.crm-game-apples-leaderboard {
+  list-style: none;
+  display: flex;
+  gap: clamp(0.6rem, 1.6vw, 1rem);
+  margin: clamp(0.45rem, 1.2vw, 0.85rem) 0 0;
+  padding: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.crm-game-apples-leaderboard-item {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 0.75rem;
+  padding: clamp(0.35rem, 1vw, 0.55rem) clamp(0.6rem, 1.4vw, 0.85rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: clamp(3rem, 12vw, 4.75rem);
+}
+
+.crm-game-apples-leaderboard-score {
+  font-size: clamp(1.2rem, 2.2vw, 1.4rem);
+  font-weight: 700;
+}
+
+.crm-game-apples-leaderboard-date {
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.crm-game-apples-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 14, 33, 0.8);
+  z-index: 1000;
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.crm-game-apples-overlay-content {
+  position: relative;
+  flex: 1;
+  background: linear-gradient(180deg, #9fe1ff 0%, #f2fbff 30%, #f7ffe6 100%);
+  display: flex;
+  flex-direction: column;
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+  overflow: hidden;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.crm-game-apples-close {
+  position: absolute;
+  top: clamp(0.75rem, 2vw, 1.25rem);
+  right: clamp(0.75rem, 2vw, 1.25rem);
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 999px;
+  width: 3rem;
+  height: 3rem;
+  font-size: 2rem;
+  line-height: 1;
+  color: #ff5252;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.crm-game-apples-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-right: clamp(4.5rem, 8vw, 6rem);
+}
+
+.crm-game-apples-topbar-stat {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 1rem;
+  padding: 0.6rem 1rem;
+  min-width: 5.5rem;
+  text-align: center;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+.crm-game-apples-topbar-label {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(33, 36, 44, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.crm-game-apples-topbar-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(33, 36, 44, 0.95);
+}
+
+.crm-game-apples-topbar-timer {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 800;
+  color: #145374;
+  text-shadow: 0 3px 8px rgba(255, 255, 255, 0.55);
+}
+
+.crm-game-apples-scene {
+  position: relative;
+  flex: 1;
+  margin-top: 0.75rem;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, #9fe1ff 0%, #b7f7ff 45%, #f9ffc7 70%, #e1f4a6 100%);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.crm-game-apples-sky,
+.crm-game-apples-grass {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.crm-game-apples-sky {
+  top: 0;
+  height: 62%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent 70%);
+}
+
+.crm-game-apples-grass {
+  bottom: 0;
+  height: 22%;
+  background: linear-gradient(180deg, rgba(111, 191, 97, 0.85), rgba(74, 157, 78, 0.95));
+}
+
+.crm-game-apples-sun {
+  position: absolute;
+  top: 8%;
+  right: 10%;
+  width: clamp(60px, 14vw, 140px);
+  height: clamp(60px, 14vw, 140px);
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffdd6f 0%, #ffad33 65%, rgba(255, 173, 51, 0) 100%);
+  box-shadow: 0 0 45px rgba(255, 221, 111, 0.8);
+}
+
+.crm-game-apples-tree {
+  position: absolute;
+  bottom: 12%;
+  left: 5%;
+  width: clamp(140px, 28vw, 260px);
+  height: clamp(220px, 40vw, 420px);
+}
+
+.crm-game-apples-tree-trunk {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26%;
+  height: 55%;
+  background: linear-gradient(180deg, #8b4f2f 0%, #5a2f16 100%);
+  border-radius: 1.5rem;
+}
+
+.crm-game-apples-tree-crown {
+  position: absolute;
+  bottom: 38%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120%;
+  height: 78%;
+  background: radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.35), transparent 60%),
+    radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.3), transparent 70%),
+    linear-gradient(180deg, #5fbf5c 0%, #2d9448 100%);
+  border-radius: 55% 55% 45% 45%;
+  box-shadow: inset 0 -8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.crm-game-apples-tree-bird {
+  position: absolute;
+  top: 20%;
+  left: 12%;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.crm-game-apples-basket {
+  position: absolute;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(180px, 36vw, 320px);
+  height: clamp(120px, 22vw, 220px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.crm-game-apples-basket-rim {
+  width: 100%;
+  height: 28%;
+  background: linear-gradient(180deg, #d4a373 0%, #b07a44 60%, #8a5a24 100%);
+  border-radius: 50% 50% 35% 35%;
+  box-shadow: inset 0 4px 10px rgba(255, 255, 255, 0.25);
+}
+
+.crm-game-apples-basket-body {
+  width: 80%;
+  height: 55%;
+  margin-top: -5%;
+  background: repeating-linear-gradient(
+      135deg,
+      #c68a4d,
+      #c68a4d 12px,
+      #b1753c 12px,
+      #b1753c 24px
+    );
+  border-radius: 45% 45% 15% 15%;
+  box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.crm-game-apples-apple {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #ffd6c7 0%, #ff7a59 45%, #d23137 100%);
+  box-shadow:
+    0 12px 20px rgba(210, 49, 55, 0.35),
+    inset -8px -12px 18px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crm-game-apples-apple:active {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.crm-game-apples-apple-shine {
+  position: absolute;
+  top: 20%;
+  left: 30%;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  filter: blur(1px);
+}
+
+.crm-game-apples-apple-leaf {
+  position: absolute;
+  top: -8%;
+  left: 52%;
+  width: 34%;
+  height: 24%;
+  border-radius: 60% 40% 80% 40%;
+  background: linear-gradient(135deg, #7ccf5f 0%, #3f8b3a 100%);
+  transform: rotate(-25deg);
+}
+
+.crm-game-apples-apple-stem {
+  position: absolute;
+  top: -12%;
+  left: 46%;
+  width: 10%;
+  height: 24%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #7f4b24 0%, #3d2510 100%);
+}
+
+.crm-game-apples-effect {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  animation: crm-game-apples-effect-pop 800ms cubic-bezier(0.25, 0.9, 0.3, 1)
+    forwards;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.crm-game-apples-effect--success {
+  color: #fff6a9;
+}
+
+.crm-game-apples-effect--miss {
+  color: #9ad5ff;
+  animation: crm-game-apples-effect-splash 620ms ease-out forwards;
+}
+
+@keyframes crm-game-apples-effect-pop {
+  0% {
+    transform: translate(-50%, -30%) scale(0.2);
+    opacity: 0;
+  }
+  40% {
+    transform: translate(-50%, -65%) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -100%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes crm-game-apples-effect-splash {
+  0% {
+    transform: translate(-50%, -40%) scale(0.4) rotate(-10deg);
+    opacity: 0;
+  }
+  45% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -10%) scale(0.8) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+.crm-game-apples-sound {
+  position: absolute;
+  bottom: clamp(0.75rem, 2vw, 1.5rem);
+  right: clamp(0.75rem, 2vw, 1.5rem);
+  background: rgba(255, 255, 255, 0.82);
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  color: #145374;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+.crm-game-apples-sound--off {
+  background: rgba(255, 255, 255, 0.6);
+  color: rgba(33, 36, 44, 0.65);
+}
+
+.crm-game-apples-sound--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.crm-game-apples-results {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 22, 40, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 2rem);
+}
+
+.crm-game-apples-results-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.88));
+  border-radius: 1.5rem;
+  padding: clamp(1rem, 4vw, 2rem);
+  max-width: min(500px, 90vw);
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+}
+
+.crm-game-apples-results-title {
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  margin: 0 0 0.5rem;
+  color: #ff6f61;
+}
+
+.crm-game-apples-results-score {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.crm-game-apples-replay {
+  background: linear-gradient(135deg, #6dd5fa 0%, #2980b9 100%);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 18px rgba(41, 128, 185, 0.35);
+  margin-bottom: 1.25rem;
+}
+
+.crm-game-apples-results-leaderboard {
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+.crm-game-apples-results-leaderboard h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  color: #145374;
+}
+
+.crm-game-apples-results-leaderboard ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.35rem 1rem;
+}
+
+.crm-game-apples-results-leaderboard li {
+  background: rgba(21, 83, 116, 0.08);
+  border-radius: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.crm-game-apples-results-score-value {
+  color: #145374;
+}
+
+.crm-game-apples-results-score-date {
+  color: rgba(21, 83, 116, 0.7);
+}
+
+.crm-game-apples-results-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(21, 83, 116, 0.75);
+}
+
+@media (max-width: 720px) {
+  .crm-game-apples-topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding-right: clamp(2.5rem, 10vw, 4rem);
+  }
+
+  .crm-game-apples-topbar-stat {
+    min-width: auto;
+  }
+
+  .crm-game-apples-sound {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .crm-game-apples-leaderboard {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
