@@ -21,6 +21,18 @@ const EXTENSION_TO_MIME: Record<string, string> = {
 
 const SUPPORTED_EXTENSIONS = new Set(Object.keys(EXTENSION_TO_MIME));
 
+type ActiveTranscription = {
+  controller: AbortController;
+  startedAt: number;
+  intervalId: number;
+  alertEl: HTMLElement;
+  labelEl: HTMLElement;
+  timerEl: HTMLElement;
+  durationEl: HTMLElement;
+  cancelButton: HTMLButtonElement;
+  audioName: string;
+};
+
 type Maybe<T> = T | null | undefined;
 
 const getMimeFromExtension = (extension: Maybe<string>) => {
@@ -35,9 +47,17 @@ const getMimeFromExtension = (extension: Maybe<string>) => {
 export class AudioTranscriptionManager {
   private readonly plugin: CRM;
 
-  private readonly activeTranscriptions = new Set<string>();
+  private readonly activeTranscriptions = new Map<string, ActiveTranscription>();
 
   private readonly renderedEmbeds = new WeakMap<HTMLElement, string>();
+
+  private transcriptionAlertsContainer: HTMLElement | null = null;
+
+  private readonly audioDurationCache = new Map<string, number>();
+
+  private readonly audioDurationRequests = new Map<string, Promise<number | null>>();
+
+  private audioContext: AudioContext | null = null;
 
   constructor(plugin: CRM) {
     this.plugin = plugin;
@@ -48,7 +68,18 @@ export class AudioTranscriptionManager {
   };
 
   dispose = () => {
-    this.activeTranscriptions.clear();
+    const activeKeys = Array.from(this.activeTranscriptions.keys());
+
+    activeKeys.forEach((key) => {
+      const session = this.activeTranscriptions.get(key);
+      session?.controller.abort();
+      this.stopTranscriptionSession(key);
+    });
+
+    if (this.audioContext) {
+      void this.audioContext.close();
+      this.audioContext = null;
+    }
   };
 
   isAudioFile = (file: Maybe<TFile>) => {
@@ -88,23 +119,33 @@ export class AudioTranscriptionManager {
       return null;
     }
 
-    this.activeTranscriptions.add(key);
+    const session = this.startTranscriptionSession(file);
     this.refreshAudioEmbeds(file.path);
-    new Notice("Transcribing audio…");
 
     try {
-      const transcript = await this.createTranscription(apiKey, file);
+      const transcript = await this.createTranscription(
+        apiKey,
+        file,
+        session.controller.signal
+      );
       const note = await this.writeMarkdownNote(file, transcript);
+      this.openTranscriptionFile(note, originPath ?? file.path);
       new Notice("Transcription note ready.");
       this.refreshAudioEmbeds(file.path);
       return note;
     } catch (error) {
-      console.error("CRM: failed to transcribe audio note", error);
-      const message =
-        error instanceof Error ? error.message : "Unknown transcription error.";
-      new Notice(`Transcription failed: ${message}`);
+      if (error instanceof DOMException && error.name === "AbortError") {
+        new Notice("Transcription canceled.");
+      } else {
+        console.error("CRM: failed to transcribe audio note", error);
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Unknown transcription error.";
+        new Notice(`Transcription failed: ${message}`);
+      }
     } finally {
-      this.activeTranscriptions.delete(key);
+      this.stopTranscriptionSession(key);
       this.refreshAudioEmbeds(file.path);
     }
 
@@ -184,7 +225,11 @@ export class AudioTranscriptionManager {
     return null;
   };
 
-  private createTranscription = async (apiKey: string, file: TFile) => {
+  private createTranscription = async (
+    apiKey: string,
+    file: TFile,
+    signal: AbortSignal
+  ) => {
     const buffer = await this.plugin.app.vault.adapter.readBinary(file.path);
     const blob = new Blob([buffer], { type: getMimeFromExtension(file.extension) });
 
@@ -198,6 +243,7 @@ export class AudioTranscriptionManager {
         Authorization: `Bearer ${apiKey}`,
       },
       body: formData,
+      signal,
     });
 
     if (!response.ok) {
@@ -232,8 +278,18 @@ export class AudioTranscriptionManager {
 
   private writeMarkdownNote = async (file: TFile, transcript: string) => {
     const notePath = this.getTranscriptionNotePath(file);
+    const now = new Date();
+    const frontmatter = [
+      "---",
+      "type: transcription",
+      `date: ${this.formatIsoDate(now)}`,
+      `time: ${this.formatIsoTime(now)}`,
+      `source: "[[${file.path}]]"`,
+      "---",
+      "",
+    ].join("\n");
     const embed = `![[${file.name}]]`;
-    const noteContent = `${embed}\n\n${transcript}\n`;
+    const noteContent = `${frontmatter}${embed}\n\n${transcript}\n`;
 
     const existing = this.plugin.app.vault.getAbstractFileByPath(notePath);
 
@@ -301,6 +357,326 @@ export class AudioTranscriptionManager {
     }
   };
 
+  private startTranscriptionSession = (file: TFile) => {
+    const key = file.path;
+    const container = this.ensureTranscriptionAlertsContainer();
+    const alertEl = container.createDiv({ cls: "crm-transcription-alert" });
+    alertEl.setAttr("role", "status");
+    alertEl.setAttr("aria-live", "polite");
+
+    const audioName = file.basename || file.name;
+
+    const headerEl = alertEl.createDiv({ cls: "crm-transcription-alert__header" });
+
+    const labelEl = headerEl.createSpan({
+      cls: "crm-transcription-alert__message",
+      text: `Transcribing ${audioName}...`,
+    });
+
+    const cancelButton = headerEl.createEl("button", {
+      cls: "crm-transcription-alert__cancel mod-warning",
+      text: "Cancel",
+    });
+    cancelButton.setAttr("type", "button");
+
+    const metaEl = alertEl.createDiv({ cls: "crm-transcription-alert__meta" });
+    metaEl.createSpan({
+      cls: "crm-transcription-alert__meta-label",
+      text: "Duration:",
+    });
+    const durationEl = metaEl.createSpan({
+      cls: "crm-transcription-alert__meta-value",
+      text: "--",
+    });
+
+    metaEl.createSpan({ cls: "crm-transcription-alert__meta-separator", text: ";" });
+
+    metaEl.createSpan({
+      cls: "crm-transcription-alert__meta-label",
+      text: "Elapsed:",
+    });
+    const timerEl = metaEl.createSpan({
+      cls: "crm-transcription-alert__timer",
+    });
+
+    const controller = new AbortController();
+    const startedAt = Date.now();
+
+    const updateTimer = () => {
+      timerEl.setText(this.formatElapsedDuration(Date.now() - startedAt));
+    };
+
+    updateTimer();
+    const intervalId = window.setInterval(updateTimer, 1000);
+
+    void this.populateAudioDuration(file, durationEl);
+
+    const session: ActiveTranscription = {
+      controller,
+      startedAt,
+      intervalId,
+      alertEl,
+      labelEl,
+      timerEl,
+      durationEl,
+      cancelButton,
+      audioName,
+    };
+
+    this.activeTranscriptions.set(key, session);
+
+    cancelButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.cancelTranscription(key);
+    });
+
+    return session;
+  };
+
+  private stopTranscriptionSession = (key: string) => {
+    const session = this.activeTranscriptions.get(key);
+
+    if (!session) {
+      return;
+    }
+
+    window.clearInterval(session.intervalId);
+    session.alertEl.remove();
+
+    this.activeTranscriptions.delete(key);
+
+    const container = this.transcriptionAlertsContainer;
+
+    if (container && container.childElementCount === 0) {
+      container.remove();
+      this.transcriptionAlertsContainer = null;
+    }
+  };
+
+  private ensureTranscriptionAlertsContainer = () => {
+    if (
+      this.transcriptionAlertsContainer &&
+      document.body.contains(this.transcriptionAlertsContainer)
+    ) {
+      return this.transcriptionAlertsContainer;
+    }
+
+    this.transcriptionAlertsContainer = document.body.createDiv({
+      cls: "crm-transcription-alerts",
+    });
+
+    return this.transcriptionAlertsContainer;
+  };
+
+  private populateAudioDuration = async (file: TFile, target: HTMLElement) => {
+    const durationSeconds = await this.getAudioDurationSeconds(file);
+
+    if (!target.isConnected) {
+      return;
+    }
+
+    if (durationSeconds == null) {
+      target.setText("--");
+      return;
+    }
+
+    target.setText(this.formatDuration(durationSeconds));
+  };
+
+  private formatElapsedDuration = (elapsedMs: number) => {
+    const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+    }
+
+    if (minutes > 0) {
+      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    }
+
+    return `${seconds}s`;
+  };
+
+  private formatIsoDate = (value: Date) => {
+    const year = value.getFullYear();
+    const month = (value.getMonth() + 1).toString().padStart(2, "0");
+    const day = value.getDate().toString().padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  private formatIsoTime = (value: Date) => {
+    const hours = value.getHours().toString().padStart(2, "0");
+    const minutes = value.getMinutes().toString().padStart(2, "0");
+    const seconds = value.getSeconds().toString().padStart(2, "0");
+
+    return `${hours}:${minutes}:${seconds}`;
+  };
+
+  private cancelTranscription = (key: string) => {
+    const session = this.activeTranscriptions.get(key);
+
+    if (!session) {
+      return;
+    }
+
+    if (session.cancelButton.disabled) {
+      return;
+    }
+
+    session.cancelButton.disabled = true;
+    session.cancelButton.setText("Cancelling...");
+    session.labelEl.setText(`Cancelling ${session.audioName}...`);
+    session.controller.abort();
+  };
+
+  private getAudioDurationSeconds = (file: TFile) => {
+    const cached = this.audioDurationCache.get(file.path);
+
+    if (typeof cached === "number") {
+      return Promise.resolve(cached);
+    }
+
+    const pending = this.audioDurationRequests.get(file.path);
+
+    if (pending) {
+      return pending;
+    }
+
+    const promise = (async (): Promise<number | null> => {
+      try {
+        const decoded = await this.decodeAudioDuration(file);
+
+        if (decoded != null) {
+          this.audioDurationCache.set(file.path, decoded);
+          return decoded;
+        }
+      } catch (error) {
+        console.warn("CRM: failed to decode audio buffer for duration", error);
+      }
+
+      const metadataDuration = await this.loadAudioMetadataDuration(file);
+
+      if (metadataDuration != null) {
+        this.audioDurationCache.set(file.path, metadataDuration);
+      }
+
+      return metadataDuration;
+    })()
+      .catch((error) => {
+        console.warn("CRM: failed to resolve audio duration", error);
+        return null;
+      })
+      .finally(() => {
+        this.audioDurationRequests.delete(file.path);
+      });
+
+    this.audioDurationRequests.set(file.path, promise);
+
+    return promise;
+  };
+
+  private loadAudioMetadataDuration = (file: TFile) => {
+    return new Promise<number | null>((resolve) => {
+      const audio = document.createElement("audio");
+      audio.preload = "metadata";
+      audio.src = this.plugin.app.vault.getResourcePath(file);
+
+      const cleanup = () => {
+        audio.removeEventListener("loadedmetadata", onLoaded);
+        audio.removeEventListener("error", onError);
+        audio.src = "";
+      };
+
+      const onLoaded = () => {
+        cleanup();
+        const duration = Number.isFinite(audio.duration) ? audio.duration : null;
+        resolve(duration);
+      };
+
+      const onError = () => {
+        cleanup();
+        resolve(null);
+      };
+
+      audio.addEventListener("loadedmetadata", onLoaded);
+      audio.addEventListener("error", onError);
+      audio.load();
+    });
+  };
+
+  private decodeAudioDuration = async (file: TFile) => {
+    try {
+      const arrayBuffer = await this.plugin.app.vault.adapter.readBinary(file.path);
+      const bufferCopy = arrayBuffer.slice(0);
+      const context = this.ensureAudioContext();
+      const audioBuffer = await context.decodeAudioData(bufferCopy);
+
+      if (!Number.isFinite(audioBuffer.duration)) {
+        return null;
+      }
+
+      return audioBuffer.duration;
+    } catch (error) {
+      console.warn("CRM: unable to decode audio duration", error);
+      return null;
+    }
+  };
+
+  private ensureAudioContext = () => {
+    if (this.audioContext) {
+      return this.audioContext;
+    }
+
+    const scopedWindow = window as Window & {
+      webkitAudioContext?: typeof AudioContext;
+    };
+
+    const AudioContextConstructor =
+      window.AudioContext ?? scopedWindow.webkitAudioContext;
+
+    if (!AudioContextConstructor) {
+      throw new Error("AudioContext is not supported in this environment.");
+    }
+
+    this.audioContext = new AudioContextConstructor();
+
+    return this.audioContext;
+  };
+
+  private formatDuration = (totalSeconds: number) => {
+    const seconds = Math.max(0, Math.round(totalSeconds));
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    const segments: string[] = [];
+
+    if (hours > 0) {
+      segments.push(`${hours}h`);
+    }
+
+    if (minutes > 0) {
+      segments.push(`${minutes}m`);
+    }
+
+    if (hours === 0 && (minutes === 0 || remainingSeconds > 0)) {
+      segments.push(`${remainingSeconds}s`);
+    }
+
+    if (segments.length === 0) {
+      return "0s";
+    }
+
+    return segments.join(" ");
+  };
+
   private refreshAudioEmbeds = (audioPath: string) => {
     if (!audioPath) {
       return;
@@ -331,7 +707,7 @@ export class AudioTranscriptionManager {
   };
 
   private openTranscriptionFile = (note: TFile, originPath: string) => {
-    this.plugin.app.workspace.openLinkText(note.path, originPath, false);
+    this.plugin.app.workspace.openLinkText(note.path, originPath, true);
   };
 
   private getAudioFileFromEmbed = (
