@@ -92,19 +92,35 @@ export const renderDailySection = (props: SettingsDailyProps): void => {
       } catch (e) {}
     });
 
-  // Toggle for inserting bullets in daily logs
-  const dailyUseBullets = (plugin as any).settings.daily?.useBullets;
+  const dailySettings = (plugin as any).settings.daily || {};
+  const inferredEntryLineFormat = (() => {
+    const explicit = dailySettings.entryLineFormat;
+    if (explicit === "plain" || explicit === "bullet" || explicit === "checkbox") {
+      return explicit;
+    }
+    if (typeof dailySettings.useBullets === "boolean") {
+      return dailySettings.useBullets ? "bullet" : "plain";
+    }
+    return "bullet";
+  })();
+
   dailySettingsSection
     .createSetting()
-    .setName("Use bullets for entries")
-    .setDesc(
-      "If enabled, new daily entries will be prefixed with a bullet ('- ')."
-    )
-    .addToggle((t) => {
-      t.setValue(dailyUseBullets ?? true).onChange(async (v) => {
-        (plugin as any).settings.daily = (plugin as any).settings.daily || {};
-        (plugin as any).settings.daily.useBullets = v;
-        await (plugin as any).saveSettings();
-      });
+    .setName("Choose new entry format")
+    .setDesc("Select how new entries are inserted into the daily note.")
+    .addDropdown((dropdown) => {
+      dropdown
+        .addOptions({
+          plain: "Plain text",
+          bullet: "Bullet point",
+          checkbox: "Checkbox",
+        })
+        .setValue(inferredEntryLineFormat)
+        .onChange(async (value) => {
+          (plugin as any).settings.daily = (plugin as any).settings.daily || {};
+          (plugin as any).settings.daily.entryLineFormat = value;
+          delete (plugin as any).settings.daily.useBullets;
+          await (plugin as any).saveSettings();
+        });
     });
 };

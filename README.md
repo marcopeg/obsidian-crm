@@ -141,7 +141,7 @@ Run the command `Open Daily note` to open the **Daily Note**; or run `Append to 
 
 Notes in your daily are automatically organized by day/time blocks and default to bullet lists so to facilitate note refactoring later on.
 
-Configure the template and shape of the time-based annotations in the `Mondo Settings`.
+Configure the template and shape of the time-based annotations in the `Mondo Settings` ⚙.
 
 Mondo keeps a log of all the notes that were created, modified, and opened each day in the _Daily Note_. That becomes your vault's hystory datatabase and also a damn good way to find out notes when you rememeber when you worked on someting.
 

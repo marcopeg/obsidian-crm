@@ -1,6 +1,7 @@
 import { App, TFile, MarkdownView } from "obsidian";
 import type Mondo from "@/main";
 import { DAILY_NOTE_TYPE, LEGACY_DAILY_NOTE_TYPE } from "@/types/MondoFileType";
+import type { DailyEntryLineFormat } from "@/types/MondoOtherPaths";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -34,6 +35,37 @@ export interface AddDailyLogOptions {
   mode?: DailyLogEntryMode;
 }
 
+type RawDailySettings = {
+  entryLineFormat?: unknown;
+  useBullets?: unknown;
+};
+
+const DEFAULT_ENTRY_LINE_FORMAT: DailyEntryLineFormat = "bullet";
+
+const resolveEntryLineFormat = (
+  dailySettings: RawDailySettings
+): DailyEntryLineFormat => {
+  const candidate = dailySettings.entryLineFormat;
+  if (candidate === "plain" || candidate === "bullet" || candidate === "checkbox") {
+    return candidate;
+  }
+  const legacyFlag = dailySettings.useBullets;
+  if (typeof legacyFlag === "boolean") {
+    return legacyFlag ? "bullet" : "plain";
+  }
+  return DEFAULT_ENTRY_LINE_FORMAT;
+};
+
+const entryPrefixForFormat = (format: DailyEntryLineFormat): string => {
+  if (format === "checkbox") {
+    return "- [ ] ";
+  }
+  if (format === "bullet") {
+    return "- ";
+  }
+  return "";
+};
+
 export async function addDailyLog(
   app: App,
   plugin: Mondo,
@@ -48,8 +80,8 @@ export async function addDailyLog(
   const folderSetting = daily.root || "Daily";
   const entryFormat = daily.entry || "YYYY-MM-DD";
   const noteFormat = daily.note || "HH:MM";
-  const useBullets =
-    typeof daily.useBullets === "boolean" ? daily.useBullets : true;
+  const entryLineFormat = resolveEntryLineFormat(daily as RawDailySettings);
+  const entryPrefix = entryPrefixForFormat(entryLineFormat);
   const providedText =
     typeof options.text === "string" ? options.text.trim() : "";
   const shouldAppendText = providedText.length > 0;
@@ -153,14 +185,13 @@ export async function addDailyLog(
   const level = match ? Math.max(1, Math.min(6, Number(match[1]))) : 2;
   const prefix = "#".repeat(level);
   const headingLine = `${prefix} ${headingText}`;
-  const bulletPrefix = useBullets ? "- " : "";
 
   if (shouldAppendText) {
     await appendLogEntryToFile(app, tfile as TFile, {
       headingLine,
-      bulletPrefix,
+      entryPrefix,
       text: providedText,
-      useBullets,
+      entryFormat: entryLineFormat,
       mode: entryMode,
     });
     return;
@@ -208,7 +239,7 @@ export async function addDailyLog(
     };
 
     if (foundIndex >= 0) {
-      // Move cursor to a new bullet line at end of this section
+      // Move cursor to a new entry line at end of this section
       const sectionEnd = findSectionEnd(foundIndex);
       let insertLine = sectionEnd + 1;
       let nextLineText = lines[insertLine] ?? null;
@@ -223,9 +254,9 @@ export async function addDailyLog(
       }
 
       if (nextLineText === "") {
-        // Replace the existing empty line with a bullet
+        // Replace the existing empty line with the entry prefix
         // replaceRange(from, to) using positions
-        const prefixText = useBullets ? "- " : "";
+        const prefixText = entryPrefix;
         editor.replaceRange(
           prefixText,
           { line: insertLine, ch: 0 },
@@ -233,10 +264,10 @@ export async function addDailyLog(
         );
         editor.setCursor({ line: insertLine, ch: prefixText.length });
       } else {
-        // Insert a single newline + bullet (no extra blank lines)
-        const insert = `\n${useBullets ? "- " : ""}`;
+        // Insert a single newline plus the entry prefix (no extra blank lines)
+        const insert = `\n${entryPrefix}`;
         editor.replaceRange(insert, { line: insertLine, ch: 0 });
-        editor.setCursor({ line: insertLine + 1, ch: useBullets ? 2 : 0 });
+        editor.setCursor({ line: insertLine + 1, ch: entryPrefix.length });
       }
       editor.focus();
       try {
@@ -268,14 +299,14 @@ export async function addDailyLog(
     const insertPosLine =
       lastH1 >= 0 ? findSectionEnd(lastH1) + 1 : lines.length;
     const prependNewline = insertPosLine !== 0;
-    const bulletPrefix = useBullets ? "- " : "";
+    const entryLinePrefix = entryPrefix;
     const insertText = `${
       prependNewline ? "\n" : ""
-    }${headingLine}\n${bulletPrefix}`;
+    }${headingLine}\n${entryLinePrefix}`;
     editor.replaceRange(insertText, { line: insertPosLine, ch: 0 });
-    // place cursor after the bullet (or at line start if no bullets)
+    // place cursor after the entry prefix (or at line start if none)
     const targetLine = insertPosLine + (prependNewline ? 2 : 1);
-    editor.setCursor({ line: targetLine, ch: bulletPrefix.length });
+    editor.setCursor({ line: targetLine, ch: entryLinePrefix.length });
     editor.focus();
     try {
       if (typeof (editor as any).scrollIntoView === "function") {
@@ -301,9 +332,9 @@ export async function addDailyLog(
 
 interface AppendLogEntryOptions {
   headingLine: string;
-  bulletPrefix: string;
+  entryPrefix: string;
   text: string;
-  useBullets: boolean;
+  entryFormat: DailyEntryLineFormat;
   mode: DailyLogEntryMode;
 }
 
@@ -312,8 +343,8 @@ async function appendLogEntryToFile(
   file: TFile,
   options: AppendLogEntryOptions
 ) {
-  const { headingLine, bulletPrefix, text, useBullets, mode } = options;
-  const entryLines = buildEntryLines(text, bulletPrefix, useBullets, mode);
+  const { headingLine, entryPrefix, text, entryFormat, mode } = options;
+  const entryLines = buildEntryLines(text, entryPrefix, entryFormat, mode);
   if (entryLines.length === 0) return;
 
   const raw = await app.vault.read(file);
@@ -332,8 +363,8 @@ async function appendLogEntryToFile(
 
 function buildEntryLines(
   text: string,
-  bulletPrefix: string,
-  useBullets: boolean,
+  entryPrefix: string,
+  entryFormat: DailyEntryLineFormat,
   mode: DailyLogEntryMode
 ) {
   const trimmed = text.trim();
@@ -344,21 +375,25 @@ function buildEntryLines(
   for (let i = 0; i < pieces.length; i++) {
     const part = pieces[i].trim();
     if (!part) continue;
-    if (useBullets) {
-      if (i === 0) {
-        const firstLine =
-          mode === "task" ? `${bulletPrefix}[ ] ${part}` : `${bulletPrefix}${part}`;
-        lines.push(firstLine);
-      } else {
-        lines.push(`  ${part}`);
-      }
-    } else {
+
+    if (entryFormat === "plain") {
       if (i === 0) {
         const prefix = mode === "task" ? "[ ] " : "";
         lines.push(`${prefix}${part}`);
       } else {
         lines.push(part);
       }
+      continue;
+    }
+
+    if (i === 0) {
+      const prefix =
+        entryFormat === "bullet" && mode === "task"
+          ? "- [ ] "
+          : entryPrefix;
+      lines.push(`${prefix}${part}`);
+    } else {
+      lines.push(`  ${part}`);
     }
   }
   return lines;

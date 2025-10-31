@@ -6,12 +6,15 @@ export interface MondoJournalSettings {
   entry: string; // filename format for journal entries (e.g. YYYY-MM-DD)
 }
 
+export type DailyEntryLineFormat = "plain" | "bullet" | "checkbox";
+
 export interface MondoDailySettings {
   root: string; // folder where daily notes are stored
   entry: string; // filename format for daily entries (e.g. YYYY-MM-DD)
   note: string; // note filename/time format inside a daily note (e.g. HH:MM)
   section?: string; // heading level for daily notes (h1..h6)
-  useBullets?: boolean; // whether to prefix new daily entries with a bullet
+  entryLineFormat?: DailyEntryLineFormat; // how new daily entries should be prefixed
+  useBullets?: boolean; // legacy flag for bullet insertion (deprecated)
 }
 
 /** Defaults for journal settings */
@@ -26,5 +29,5 @@ export const DEFAULT_MONDO_DAILY_SETTINGS: MondoDailySettings = {
   entry: "YYYY-MM-DD",
   note: "HH:MM",
   section: "h2",
-  useBullets: true,
+  entryLineFormat: "bullet",
 };
