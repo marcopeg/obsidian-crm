@@ -73,6 +73,7 @@ import { journalMoveFactory } from "@/commands/journal.nav";
 import { insertTimestamp } from "@/commands/timestamp.insert";
 import { sendToChatGPT } from "@/commands/chatgpt.send";
 import { openSelfPersonNote } from "@/commands/self.open";
+import { openMagicPaste } from "@/commands/magicPaste";
 import { injectJournalNav } from "@/events/inject-journal-nav";
 import {
   injectMondoLinks,
@@ -540,6 +541,14 @@ export default class Mondo extends Plugin {
       name: "Insert timestamp",
       editorCallback: () => {
         insertTimestamp(this.app, this);
+      },
+    });
+
+    this.addCommand({
+      id: "magic-paste",
+      name: "Magic Paste",
+      callback: () => {
+        openMagicPaste(this.app);
       },
     });
 

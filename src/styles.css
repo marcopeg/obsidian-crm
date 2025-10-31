@@ -198,6 +198,29 @@
   color: var(--color-orange, #d97706);
 }
 
+.mondo-magic-paste {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mondo-magic-paste__description {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.mondo-magic-paste__input {
+  width: 100%;
+  min-height: 16rem;
+  resize: vertical;
+}
+
+.mondo-magic-paste__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
 .mondo-textfield__mic--success {
   color: var(--color-green, #2f9e44);
 }

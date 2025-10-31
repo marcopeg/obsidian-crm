@@ -7,6 +7,7 @@ _Mondo_ is a general purpose plugin that adds plentiful of utilities to a standa
 - **📝 Transcription:** generate a transcription file out of any Obsidian recording
 - **🔈 Voiceover:** transform your note into an audio file
 - **🕰️ Timestamps:** quickly add timestamps into your notes
+- **🔥 Magic Paste:** cleanup copied text from multi-lines
 - **🧘 Focus Mode:** hide most of the UI and focus on your writing
 - **🤖 Open in ChatGPT:** use your notes as templates for ChatGPT prompts
 - **👫 Mondo IMS:** typed entities with strong relations
@@ -79,6 +80,12 @@ Here is an example of a Heading level 2 timestamp template:
 ```Markdown
 ## YY/MM/DD hh:mm
 ```
+
+# 🔥 Magic Paste
+
+Do you get frustrated when you copy stuff over into Obsidian and see the multiple empty lines? I do.
+
+Run `Magic Paste` to cleanup your copied data into the current note.
 
 # 🧘 Focus Mode
 
